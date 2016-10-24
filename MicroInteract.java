@@ -8,28 +8,29 @@ import java.io.File;
 import java.io.FileOutputStream;
 
 /**
- * Created by baudson on 30/09/16.
- * Sert ‡ utiliser le micro de l'appareil Android en enregistrant les donnÈes brutes
- * Forme des donÈnes: 11025Hz, une bande audio, 16bits / Features
+ * Created by Mad
+ * Sert √† utiliser le micro de l'appareil Android en enregistrant les donn√©es brutes
  */
 
 public class MicroInteract
 {
-    //Path du fichier une fois l'enregistrement terminÈ
-    private String _filePath;
+    //Path du fichier une fois l'enregistrement termin√©
+    protected String _filePath;
 
-    //ParamËtres enregistrement
-    private AudioRecord _recorder;
-    private int _bufferSize;
-    private int _sampleRate = 44100;    // /!\ Seul 44100Hz fontionne sur tout device (autres valeurs possibles: 22050, 16000, et 11025)
-    private int _channel = AudioFormat.CHANNEL_IN_MONO;
-    private int _encoding = AudioFormat.ENCODING_PCM_16BIT;
+    //Param√®tres enregistrement
+    protected AudioRecord _recorder;
+    protected int _bufferSize;
+    protected int _sampleRate = 44100;    // /!\ Seul 44100Hz fontionne sur tout device (autres valeurs possibles: 22050, 16000, et 11025)
+    protected int _channel = AudioFormat.CHANNEL_IN_MONO;
+    protected int _encoding = AudioFormat.ENCODING_PCM_16BIT;
     protected int _source = MediaRecorder.AudioSource.MIC;
 
     // Token de lecture
-    private Boolean _inRec;
+    protected Boolean _inRec;
 
 
+    /** Constructeur par d√©faut compatible th√©oriquement avec l'enssemble des devices.
+     */
     public MicroInteract()
     {
         _bufferSize = AudioRecord.getMinBufferSize(_sampleRate, _channel, _encoding);
@@ -38,8 +39,26 @@ public class MicroInteract
     }
 
 
+    /** Constructeur sp√©cifiant l'enssemble des param√®tres utiles
+     * @param sampleRate : Valeur de l'√©chantillonage, valeurs possibles: 44100, 22050, 16000, 11025
+     * @param channel : AudioFormat.CHANNEL_IN_MONO ou AudioFormat.CHANNEL_IN_STEREO
+     * @param encodaing :  AudioFormat.ENCODING_PCM_8BIT, AudioFormat.ENCODING_PCM_16BIT ou AudioFormat.ENCODING_PCM_FLOAT
+     * @param source : Voir https://lc.cx/oGqj pour plus d'info
+     */
+    public MicroInteract(int sampleRate, int channel, int encodaing, int source)
+    {
+        _sampleRate=sampleRate;
+        _channel=channel;
+        _encoding=encodaing;
+        _source=source;
+        _bufferSize = AudioRecord.getMinBufferSize(_sampleRate, _channel, _encoding);
+        _inRec = false;
+        _filePath="";
+    }
+
+
     /**
-     * Permet d'enregistrer durant un temps donner en utilisant le microphone du tÈlÈphone
+     * Permet d'enregistrer durant un temps donner en utilisant le microphone du t√©l√©phone
      * @param timeInSeconde : temps en seconde durent lequel on doit enregistrer
      * @param targetRecordPath : path et nom du fichier audio
      * @return : path + nom du fichier d'enregistrement
@@ -52,12 +71,12 @@ public class MicroInteract
     }
 
 
-    /** DÈmarre un record ThreadÈ
+    /** D√©marre un record Thread√©
      * @param targetName : nom du fichier d'enregistrement
      */
     public void startRecord(String targetName)
     {
-        //verification que l'on ne soit pas dÈj‡ en lecture
+        //verification que l'on ne soit pas d√©j√† en lecture
         if(_inRec) return;
         _inRec=true;
 
@@ -65,7 +84,7 @@ public class MicroInteract
         _recorder = new AudioRecord(_source, _sampleRate, _channel, _encoding, _bufferSize);
         _recorder.startRecording();
 
-        //Lancement de la lecture dans un thread sÈparÈ
+        //Lancement de la lecture dans un thread s√©par√©
         new Thread(new Runnable() {
             public void run()
             {
@@ -98,12 +117,12 @@ public class MicroInteract
         return _filePath;
     }
 
-    /** Convertir un tableau de shorts en bytes en dÈcoupant les short sur 2 bytes
-     * UtilisÈ originellement par startRecord()
-     * @param sTab : tableau de shorts ‡ convertir
+    /** Convertir un tableau de shorts en bytes en d√©coupant les short sur 2 bytes
+     * Utilis√© originellement par startRecord()
+     * @param sTab : tableau de shorts √† convertir
      * @return : tableau de bytes convertie
      */
-    private byte[] shortTabToByteTab(short[] sTab)
+    protected byte[] shortTabToByteTab(short[] sTab)
     {
         int sTabSize = sTab.length;
         byte[] bTab = new byte[sTabSize*2];
@@ -118,8 +137,8 @@ public class MicroInteract
 
 
     /** Permet de supprimer un fichier audio (ou autre)
-     * @param path : chemain vers le fichier audio ‡ supprimer
-     * @return "true" si le ficheir audio existe et a ÈtÈ supprimÈ, "false" sinon
+     * @param path : chemain vers le fichier audio √† supprimer
+     * @return "true" si le ficheir audio existe et a √©t√© supprim√©, "false" sinon
      */
     public Boolean removeAudioFile(String path)
     {
