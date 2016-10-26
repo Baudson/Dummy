@@ -5,7 +5,9 @@ import android.media.AudioRecord;
 import android.media.MediaRecorder;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.util.ArrayList;
 
 /**
  * Created by Mad
@@ -135,6 +137,44 @@ public class MicroInteract
         return bTab;
     }
 
+    /** Permet de convertir un fichier .raw enregistrer à 44100Hz vers 11025Hz exploitable par Alize (non-testé)
+     * @param filePath : Path du fichier à convertire, celui-ci sera écrasé
+     */
+    protected void convertTo11025Hz(String filePath)
+    {
+        try {
+            // Récupération du fichier en byte[]
+            File f = new File(filePath);
+            FileInputStream is = new FileInputStream(f);
+            int l = (int) f.length();
+            byte[] b = new byte[l];;
+            ArrayList<Byte> r = new ArrayList<Byte>();
+            is.read(b);
+            is.close();
+
+            // Suppresion de 3/4 des données
+            for(int i=0;i<l;i+=2)
+                if(i%8==0)
+                {
+                    r.add(b[i]);
+                    r.add(b[i+1]);
+                }
+
+            // Ecriture des nouvelles données dans le fichier .raw source
+            FileOutputStream os = new FileOutputStream(f);
+            os.write(arrayListToTabByte(r), 0, r.size());
+            os.close();
+        } catch(Exception e){e.printStackTrace();}
+    }
+
+    //N'existe pas de méthode standard pour convertire une ArrayList<byte> en byte[]
+    protected byte[] arrayListToTabByte(ArrayList<Byte> lb)
+    {
+        byte[] r = new byte[lb.size()];
+        for(int i=0;i<r.length;i++) r[i]=lb.get(i);
+        return r;
+    }
+
 
     /** Permet de supprimer un fichier audio (ou autre)
      * @param path : chemain vers le fichier audio à supprimer
@@ -147,3 +187,9 @@ public class MicroInteract
         return f.delete();
     }
 }
+
+/*
+    (\ _ /)
+    (='.'=) {I'm not Mad.)
+    (")-(")
+*/
